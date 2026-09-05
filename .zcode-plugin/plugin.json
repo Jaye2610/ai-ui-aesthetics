@@ -1,0 +1,16 @@
+{
+  "name": "ai-ui-aesthetics",
+  "version": "1.0.0",
+  "description": "前端美学增强插件。Skill（教 AI 写漂亮 UI：设计 Token、排版层级、留白、丝滑动效）+ MCP（设计调研：抓参考站、扫图取色、配色建议）。零依赖、框架无关，可跨 Agent Harness（含 DeepSeek Harness）使用。",
+  "author": { "name": "aiWork" },
+  "license": "MIT",
+  "skills": "skills",
+  "mcpServers": {
+    "ai-ui-aesthetics-design-research": {
+      "command": "D:\\项目\\aiWork\\ai-ui-aesthetics\\mcp-server\\.venv\\Scripts\\python.exe",
+      "args": [
+        "D:\\项目\\aiWork\\ai-ui-aesthetics\\mcp-server\\mcp_server.py"
+      ]
+    }
+  }
+}
