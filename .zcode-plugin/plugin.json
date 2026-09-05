@@ -7,9 +7,9 @@
   "skills": "skills",
   "mcpServers": {
     "ai-ui-aesthetics-design-research": {
-      "command": "D:\\项目\\aiWork\\ai-ui-aesthetics\\mcp-server\\.venv\\Scripts\\python.exe",
+      "command": "python",
       "args": [
-        "D:\\项目\\aiWork\\ai-ui-aesthetics\\mcp-server\\mcp_server.py"
+        "${ZCODE_PLUGIN_ROOT}/mcp-server/launch_mcp.py"
       ]
     }
   }

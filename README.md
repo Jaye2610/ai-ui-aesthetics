@@ -41,6 +41,8 @@ AI 生成的前端常常"单调"——配色随手、间距无尺度、排版无
 - `skills/` → Skill（`SKILL.md`）
 - `mcpServers` → 设计调研 MCP（见 `.zcode-plugin/plugin.json`）
 
+**导入即用**：插件清单用 `${ZCODE_PLUGIN_ROOT}` 模板变量指到插件自带的启动器 `mcp-server/launch_mcp.py`，ZCode 安装时会自动把它解析为插件在本机的实际根目录。启动器会**自动创建 `.venv` 并安装依赖**（仅首次运行；之后直接复用），因此克隆 / 导入后**无需手动配置 MCP 路径、也无需自己建虚拟环境**。只要机器上有 `python` 3.10+ 即可。
+
 ZCode 的 **Settings → Plugin Management**（插件管理）分 **Installed**（已安装）和 **Discover**（发现）两个标签。下面的几种方式任选其一，目的都是让 ZCode 识别到本插件的 `.zcode-plugin/plugin.json`。安装后到 **Installed** 标签确认插件处于**启用**状态。
 
 ### 方式一：从开源仓库克隆安装（GitHub）
@@ -48,30 +50,19 @@ ZCode 的 **Settings → Plugin Management**（插件管理）分 **Installed**�
 从 GitHub 仓库克隆到本地，然后作为本地插件目录加入 ZCode：
 
 ```bash
-# 1. 克隆仓库到任意目录（以 D:\repos 为例）
+# 克隆仓库到任意目录（以 D:\repos 为例）
 cd D:\repos
 git clone git@github.com:Jaye2610/ai-ui-aesthetics.git
 cd ai-ui-aesthetics
 ```
 
-```bash
-# 2. 给 MCP server 创建 Python 虚拟环境并安装依赖（本仓库不含 .venv，必需）
-cd mcp-server
-uv venv
-uv pip install -r requirements.txt
-```
+然后在 ZCode **Settings → Plugin Management → Discover** 点 **`+` → 选择本地目录**，选中 `D:\repos\ai-ui-aesthetics`（含 `.zcode-plugin/plugin.json` 的根目录），启用即可。首次使用 MCP 工具时 ZCode 会自动拉起启动器、完成环境自举，无需其它手动步骤。
 
-> 需要先安装 [uv](https://docs.astral.sh/uv/)；也可以改用系统 Python：`python -m venv .venv && .venv/Scripts/python.exe -m pip install -r requirements.txt`（Windows，Linux/macOS 为 `.venv/bin/python`）。
+（可选）想提前验证环境，可手动跑一次启动器自带的冒烟测试，正常会输出三个工具名：
 
 ```bash
-# 3. 回到仓库根目录，冒烟测试 MCP server 是否能启动（应输出三个工具名）
-cd ..
-mcp-server/.venv/Scripts/python.exe -c "import mcp_server as m; from asyncio import run; print([t.name for t in run(m.mcp.list_tools())])"
+python mcp-server/launch_mcp.py --smoke
 ```
-
-然后在 ZCode **Settings → Plugin Management → Discover** 点 **`+` → 选择本地目录**，选中 `D:\repos\ai-ui-aesthetics`（含 `.zcode-plugin/plugin.json` 的根目录），启用即可。
-
-> ⚠️ `plugin.json` 里 `mcpServers.command/args` 目前是**写死的绝对路径**（指向开发机上的另一份副本）。克隆到你机器后，若 MCP 连不上，请打开 `plugin.json` 把这两处改成 `mcp-server/.venv/Scripts/python.exe` 和你 `mcp-server/mcp_server.py` 的**本机绝对路径**（Linux/macOS 用 `.venv/bin/python`），保存后重启插件连接。
 
 ### 方式二：本地目录作为插件源（推荐，开发调试用）
 
@@ -81,7 +72,7 @@ mcp-server/.venv/Scripts/python.exe -c "import mcp_server as m; from asyncio imp
 
 若你的环境已配置了包含本插件的市场，在 Discover 标签 **`+`** 选择市场来源并启用。市场推送尚未配置时，本方式暂不可用，请用方式一。
 
-> 无论哪种方式，仅启用 Skill 不依赖 venv；只有使用 MCP（抓站 / 扫图 / 配色建议）时才需要 `.venv` 存在且路径正确。
+> 只有首次使用 MCP（抓站 / 扫图 / 配色建议）时才需要联网安装依赖；仅启用 Skill 不依赖 venv，也不占用启动时间。
 
 ## 跨 Harness 接入
 
@@ -92,9 +83,10 @@ mcp-server/.venv/Scripts/python.exe -c "import mcp_server as m; from asyncio imp
 
 ```
 ai-ui-aesthetics/
-├── .zcode-plugin/plugin.json    # ZCode 插件清单（skills + mcpServers）
+├── .zcode-plugin/plugin.json    # ZCode 插件清单（skills + mcpServers，模板变量自举）
 ├── skills/ai-ui-aesthetics/     # Skill 本体（SKILL.md + 四支柱）
 ├── mcp-server/                  # 设计调研 MCP（Python + FastMCP）
+│   └── launch_mcp.py            # 自举启动器：自动建 .venv + 装依赖
 ├── integration/                 # 跨 harness 接入说明
 └── package.json                 # 包元数据（可选）
 ```

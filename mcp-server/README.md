@@ -16,32 +16,34 @@
 
 ## 运行
 
-本项目自带 uv 虚拟环境（`.venv/`），零手动配置：
+推荐通过自举启动器 `launch_mcp.py` 运行：它会在首次运行时自动创建本地虚拟环境（`.venv/`）并按 `requirements.txt` 安装依赖，之后复用，**无需手动建环境**（机器需有 `python` 3.10+）：
 
 ```bash
-cd mcp-server
-uv run --with <deps> python mcp_server.py      # 或直接
-./.venv/Scripts/python.exe mcp_server.py       # Windows
+python launch_mcp.py        # 首次会自动建 .venv 并装依赖，然后拉起 server
 ```
 
-> 首次使用若 `.venv/` 不存在：`uv venv && uv pip install -r requirements.txt`。
+也可直接用已建好的 venv 手动运行（等价）：
+
+```bash
+./.venv/Scripts/python.exe mcp_server.py       # Windows（Linux/macOS 用 .venv/bin/python）
+```
 
 ## 接入 ZCode / 其他 harness
 
-### 方式 A：随本插件自动连接
-插件 `.zcode-plugin/plugin.json` 已注册 `mcpServers`，ZCode 安装插件后自动连接（见该文件 `mcpServers.command`）。ZCode 会**自动信任并连接插件提供的 MCP server**。
+### 方式 A：随本插件自动连接（导入即用）
+插件 `.zcode-plugin/plugin.json` 已注册 `mcpServers`，通过 `${ZCODE_PLUGIN_ROOT}` 模板变量指向本目录的 `launch_mcp.py`。ZCode 安装插件后会自动把模板解析为插件实际根目录并连接 server；首次使用自动建环境，**克隆 / 导入后无需任何手动配置**。
 
 ### 方式 B：手动注册（通用 harness）
-在任何支持的 MCP 客户端添加 stdio server，命令为：
+在任何支持手动注册的 MCP 客户端添加 stdio server，命令用系统 `python` + 启动器（自动处理环境），Linux/macOS 同样适用：
 
 ```json
 {
-  "command": "<此目录绝对路径>/.venv/Scripts/python.exe",
-  "args": ["<此目录绝对路径>/mcp_server.py"]
+  "command": "python",
+  "args": ["<此目录绝对路径>/launch_mcp.py"]
 }
 ```
 
-Linux/macOS 用 `.venv/bin/python`。
+> 若希望用一个可脱离 ZCode 模板、真正“开箱即用”的可执行文件，可把上面的 `command` 指向你本机已建好的 `.venv/Scripts/python.exe`，`args` 指向 `mcp_server.py`——只是这样换机器会失效，故建议优先用启动器方案。
 
 ## 边界与伦理
 - 仅做**设计调研**：抓取限速、超时、遵 robots；提炼设计原则与 token，**不复制目标站点的像素资产**。
@@ -53,6 +55,6 @@ Linux/macOS 用 `.venv/bin/python`。
 
 ## 冒烟测试
 ```bash
-./.venv/Scripts/python.exe -c "import mcp_server as m; from asyncio import run; print([t.name for t in run(m.mcp.list_tools())])"
+python launch_mcp.py --smoke
 ```
-应输出三个工具名。更完整的 MCP 握手验证见 `tests/`（可选）。
+应输出三个工具名（`research_reference_site_tool` / `scan_colors_tool` / `suggest_color_palette_tool`）。更完整的 MCP 握手验证见 `tests/`（可选）。
